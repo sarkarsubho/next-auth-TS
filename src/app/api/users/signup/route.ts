@@ -1,9 +1,10 @@
 import { connect } from "@/dbConfig/dbConfig";
-import  {User}  from "@/models/userModel";
+import { User } from "@/models/userModel";
 import { NextRequest, NextResponse } from "next/server";
 import bcryptjs from "bcryptjs";
+import { sendEmail } from "@/helpers/mailer";
 
-connect(); 
+connect();
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,21 +16,40 @@ export async function POST(request: NextRequest) {
 
     // //    check if user is already present or not
 
-    let user=await User.findOne({email})
+    let user = await User.findOne({ email });
 
     if (user) {
-      NextResponse.json({ message: "user already exits" }, { status: 400 });
+      return NextResponse.json(
+        { message: "user already exits" },
+        { status: 400 }
+      );
     }
     // hash password
 
     const salt = await bcryptjs.genSalt(10);
     const hashedPassword = await bcryptjs.hash(password, salt);
 
-    let newUser = await User.create({ username, email, password:hashedPassword});
+    // let newUser = await User({
+    //   username,
+    //   email,
+    //   password: hashedPassword,
+    // });
+    const newUser = new User({
+      username,
+      email,
+      password: hashedPassword,
+    });
+
+    // send verificatio email
+    const savedUser = await newUser.save();
+
+    console.log(savedUser);
+
+    await sendEmail({ email, emailType: "VERIFY", userId: savedUser._id });
 
     return NextResponse.json({
       message: "User created successfully",
-      user: newUser,
+      user: savedUser,
       success: true,
     });
   } catch (error: any) {

@@ -31,6 +31,7 @@ export default function LoginPage() {
     } catch (error: any) {
       toast.error(error.message);
       console.log("error message", error.message);
+      alert(error.message)
     } finally {
       setLoading(false);
     }
