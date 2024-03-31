@@ -30,4 +30,4 @@ const userSchema = new mongoose.Schema({
 });
 
 // if it is allready in mongo use that or make a new one
-export const User = mongoose.model("users", userSchema);
+export const User = mongoose.models.users ||  mongoose.model("users", userSchema);
